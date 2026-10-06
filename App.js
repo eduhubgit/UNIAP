@@ -1,20 +1,35 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import {Text, View, StyleSheet, ScrollView} from "react-native"
+import StudentComponent from "./components/university/StudentComponent"
+//import ProfessorComponent from "./components/university/ProfessorComponent"
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+
+const App = () => {
+  return(
+   <StudentComponent 
+   name = "Jerferson de Carvalho"
+   course = "Design DIgital"
+   ira = {7.6}
+   imagesrc = "https://m.media-amazon.com/images/M/MV5BOGQ5YWFjYjItODE5OC00ZDQxLTk5ZmYtNzY0YzM4NjIyMWFlXkEyXkFqcGc@._V1_.jpg"
+   />
+    
   );
-}
+
+
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection:"column",
+    justifyContent:"center",
+    alignItems:"center"
+
   },
-});
+  text:{
+    fontWeight:"bold",
+    fontSize:60
+  }
+
+})
+
+export default App
