@@ -12,6 +12,7 @@ import { colors } from '../theme';
 import { useApp } from '../context/AppContext';
 import PersonModal from '../components/PersonModal';
 import { buscarPessoa } from '../utils/people';
+import LogoUniAp from '../components/LogoUniAp';
 
 export default function Chats({ navigation }) {
   const { currentUser, chats } = useApp();
@@ -39,9 +40,7 @@ export default function Chats({ navigation }) {
           onPress={() => navigation.goBack()}>
           <Text style={styles.voltarText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.logo}>
-          UNI <Text style={{ color: colors.pink }}>AP</Text>
-        </Text>
+                <LogoUniAp tamanho={32} />
         <View style={{ width: 40 }} />
       </View>
 
