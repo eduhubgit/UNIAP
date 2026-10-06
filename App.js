@@ -1,35 +1,64 @@
-import {Text, View, StyleSheet, ScrollView} from "react-native"
-import StudentComponent from "./components/university/StudentComponent"
-//import ProfessorComponent from "./components/university/ProfessorComponent"
+import React from 'react';
+import { View, ActivityIndicator } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { AppProvider, useApp } from './context/AppContext';
+import { colors } from './theme';
+import Welcome from './screens/Welcome';
+import Register from './screens/Register';
+import Register2 from './screens/Register2';
+import ApStep1 from './screens/ApStep1';
+import ApStep2 from './screens/ApStep2';
+import Main from './screens/Main';
+import Settings from './screens/Settings';
+import Support from './screens/Support';
+import Chats from './screens/Chats';
+import Chat from './screens/Chat';
 
+const Stack = createNativeStackNavigator();
 
-const App = () => {
-  return(
-   <StudentComponent 
-   name = "Jerferson de Carvalho"
-   course = "Design DIgital"
-   ira = {7.6}
-   imagesrc = "https://m.media-amazon.com/images/M/MV5BOGQ5YWFjYjItODE5OC00ZDQxLTk5ZmYtNzY0YzM4NjIyMWFlXkEyXkFqcGc@._V1_.jpg"
-   />
-    
-  );
+function Rotas() {
+  const { carregado, currentUser } = useApp();
 
-
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection:"column",
-    justifyContent:"center",
-    alignItems:"center"
-
-  },
-  text:{
-    fontWeight:"bold",
-    fontSize:60
+  // espera terminar de ler os dados salvos
+  if (!carregado) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.bg,
+        }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
   }
 
-})
+  return (
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName={currentUser ? 'Main' : 'Welcome'}
+        screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Welcome" component={Welcome} />
+        <Stack.Screen name="Register" component={Register} />
+        <Stack.Screen name="Register2" component={Register2} />
+        <Stack.Screen name="ApStep1" component={ApStep1} />
+        <Stack.Screen name="ApStep2" component={ApStep2} />
+        <Stack.Screen name="Main" component={Main} />
+        <Stack.Screen name="Settings" component={Settings} />
+        <Stack.Screen name="Support" component={Support} />
+        <Stack.Screen name="Chats" component={Chats} />
+        <Stack.Screen name="Chat" component={Chat} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
 
-export default App
+export default function App() {
+  return (
+    <AppProvider>
+      <Rotas />
+    </AppProvider>
+  );
+}
