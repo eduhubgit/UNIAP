@@ -1,36 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Modal,
-  TextInput,
-  Alert,
   SafeAreaView,
-} from 'react-native';
-import { colors } from '../theme';
-import { useApp } from '../context/AppContext';
-import { mostrarAlerta } from '../utils/alerta';
+} from "react-native";
+import { colors } from "../theme";
+import { useApp } from "../context/AppContext";
+import { mostrarAlerta } from "../utils/alerta";
+import CampoTexto from "../components/CampoTexto";
 
 export default function Welcome({ navigation }) {
   const { login } = useApp();
   const [loginVisible, setLoginVisible] = useState(false);
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
 
-    const handleLogin = () => {
+  const handleLogin = () => {
     if (!email || !senha) {
-      mostrarAlerta('Atenção', 'Preencha e-mail e senha.');
+      mostrarAlerta("Atenção", "Preencha e-mail e senha.");
       return;
     }
     if (login(email, senha)) {
       setLoginVisible(false);
-      setEmail('');
-      setSenha('');
-      navigation.replace('Main');
+      setEmail("");
+      setSenha("");
+      navigation.replace("Main");
     } else {
-      mostrarAlerta('Erro', 'E-mail ou senha incorretos.');
+      mostrarAlerta("Erro", "E-mail ou senha incorretos.");
     }
   };
 
@@ -41,19 +40,21 @@ export default function Welcome({ navigation }) {
           UNI <Text style={{ color: colors.pink }}>AP</Text>
         </Text>
         <Text style={styles.slogan}>
-          Mais do que um quarto,{'\n'}o lugar certo para você.
+          Mais do que um quarto,{"\n"}o lugar certo para você.
         </Text>
       </View>
 
       <View style={styles.bottom}>
         <TouchableOpacity
           style={styles.btnPrimary}
-          onPress={() => setLoginVisible(true)}>
+          onPress={() => setLoginVisible(true)}
+        >
           <Text style={styles.btnPrimaryText}>Entrar</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.btnOutline}
-          onPress={() => navigation.navigate('Register')}>
+          onPress={() => navigation.navigate("Register")}
+        >
           <Text style={styles.btnOutlineText}>Criar conta</Text>
         </TouchableOpacity>
       </View>
@@ -62,22 +63,22 @@ export default function Welcome({ navigation }) {
         visible={loginVisible}
         transparent
         animationType="slide"
-        onRequestClose={() => setLoginVisible(false)}>
+        onRequestClose={() => setLoginVisible(false)}
+      >
         <View style={styles.overlay}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Entrar</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="E-mail"
+            <CampoTexto
+              label="E-mail"
+              placeholder="seuemail@exemplo.com"
               autoCapitalize="none"
               keyboardType="email-address"
               value={email}
               onChangeText={setEmail}
             />
-            <TextInput
-              style={styles.input}
-              placeholder="Senha"
-              secureTextEntry
+            <CampoTexto
+              label="Senha"
+              senha
               value={senha}
               onChangeText={setSenha}
             />
@@ -98,15 +99,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
     padding: 24,
   },
-  top: { alignItems: 'center', marginTop: 80 },
-  logo: { fontSize: 56, fontWeight: 'bold', color: colors.primary },
+  top: { alignItems: "center", marginTop: 80 },
+  logo: { fontSize: 56, fontWeight: "bold", color: colors.primary },
   slogan: {
     fontSize: 18,
     color: colors.text,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 12,
   },
   bottom: { marginBottom: 30 },
@@ -114,38 +115,30 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     padding: 16,
     borderRadius: 30,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 12,
   },
-  btnPrimaryText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  btnPrimaryText: { color: "#fff", fontSize: 16, fontWeight: "600" },
   btnOutline: {
     borderColor: colors.primary,
     borderWidth: 1.5,
     padding: 16,
     borderRadius: 30,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  btnOutlineText: { color: colors.primary, fontSize: 16, fontWeight: '600' },
+  btnOutlineText: { color: colors.primary, fontSize: 16, fontWeight: "600" },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
     padding: 24,
   },
-  modalCard: { backgroundColor: '#fff', borderRadius: 20, padding: 20 },
+  modalCard: { backgroundColor: "#fff", borderRadius: 20, padding: 20 },
   modalTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.primary,
     marginBottom: 16,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-    backgroundColor: colors.bg,
-  },
-  cancel: { textAlign: 'center', color: colors.muted, marginTop: 4 },
+  cancel: { textAlign: "center", color: colors.muted, marginTop: 4 },
 });

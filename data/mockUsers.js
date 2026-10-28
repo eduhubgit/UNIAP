@@ -23,6 +23,7 @@ export const MOCK_USERS = [
     preferencias: ['organizada', 'silencio', 'nao_fuma', 'estudo'],
     faixa: '300a500',
     ap: {
+     vagasTotal: 2, vagas: 1, ocupantes: ['o1'],
       endereco: 'Rua Dr. Pinto Ferreira, 120',
       bairro: 'Centro',
       cidade: 'Quixadá - CE',
@@ -56,6 +57,7 @@ export const MOCK_USERS = [
     preferencias: ['organizada', 'silencio', 'nao_fuma', 'animais'],
     faixa: '500a800',
     ap: {
+      vagasTotal: 3, vagas: 2, ocupantes: ['o2'],
       endereco: 'Av. Plácido Castelo, 450',
       bairro: 'Planalto Universitário',
       cidade: 'Quixadá - CE',
@@ -90,6 +92,7 @@ export const MOCK_USERS = [
     preferencias: ['amigos', 'animais', 'cozinha', 'perto_faculdade'],
     faixa: '300a500',
     ap: {
+      vagasTotal: 1, vagas: 1,
       endereco: 'Rua Padre Pedro, 88',
       bairro: 'Campo Velho',
       cidade: 'Quixadá - CE',
@@ -125,6 +128,7 @@ export const MOCK_USERS = [
     preferencias: ['organizada', 'silencio', 'cozinha', 'nao_fuma'],
     faixa: '500a800',
     ap: {
+      vagasTotal: 3, vagas: 1, ocupantes: ['o3', 'o4'],
       endereco: 'Rua José Jucá, 305',
       bairro: 'Alto São Francisco',
       cidade: 'Quixadá - CE',
@@ -159,6 +163,7 @@ export const MOCK_USERS = [
     preferencias: ['amigos', 'cozinha', 'perto_faculdade'],
     faixa: '300a500',
     ap: {
+      vagasTotal: 2, vagas: 0, ocupantes: ['o5', 'o6'],
       endereco: 'Av. Jesus Maria José, 77',
       bairro: 'Centro',
       cidade: 'Quixadá - CE',

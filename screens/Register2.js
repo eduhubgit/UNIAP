@@ -1,17 +1,10 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  SafeAreaView,
-} from 'react-native';
+import { Text, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 import { colors } from '../theme';
 import { useApp } from '../context/AppContext';
 import { mostrarAlerta } from '../utils/alerta';
 import SelectField from '../components/SelectField';
+import CampoTexto from '../components/CampoTexto';
 import { HORARIOS, PREFERENCIAS, FAIXAS_PRECO } from '../data/options';
 
 export default function Register2({ navigation }) {
@@ -26,24 +19,18 @@ export default function Register2({ navigation }) {
 
   const concluir = () => {
     if (sobre.trim().length < 10) {
-      mostrarAlerta(
-        'Atenção',
-        'Conte um pouco mais sobre você (mínimo 10 caracteres).'
-      );
+      mostrarAlerta('Atenção', 'Conte um pouco mais sobre você (mínimo 10 caracteres).');
       return;
     }
     if (horarios.length === 0) {
-      mostrarAlerta(
-        'Atenção',
-        'Selecione pelo menos um horário da sua rotina.'
-      );
+      mostrarAlerta('Atenção', 'Selecione pelo menos um horário da sua rotina.');
       return;
     }
     if (preferencias.length === 0) {
       mostrarAlerta('Atenção', 'Selecione pelo menos uma preferência.');
       return;
     }
-    if (!faixa) {
+    if (!temAp && !faixa) {
       mostrarAlerta('Atenção', 'Selecione a faixa de preço.');
       return;
     }
@@ -53,29 +40,23 @@ export default function Register2({ navigation }) {
       horarios,
       preferencias,
       observacoes: observacoes.trim(),
-      faixa,
     };
 
     if (temAp) {
-      // dono de apartamento: guarda o perfil e segue para as telas do AP
+      // quem tem AP segue para as telas do apartamento (o preço é definido lá)
       updateDraft(perfil);
       navigation.navigate('ApStep1');
     } else {
-      // sem AP: finaliza o cadastro e entra no app
-      finishRegister({ ...perfil, ap: null });
-      mostrarAlerta(
-        'Cadastro concluído!',
-        'Sua conta foi criada. Bem-vindo(a) ao UNI AP!'
-      );
+      // quem não tem AP informa quanto pode pagar e finaliza aqui
+      finishRegister({ ...perfil, faixa, ap: null });
+      mostrarAlerta('Cadastro concluído!', 'Sua conta foi criada. Bem-vindo(a) ao UNI AP!');
       navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={{ padding: 24 }}
-        keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ padding: 24 }} keyboardShouldPersistTaps="handled">
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.back}>← Voltar</Text>
         </TouchableOpacity>
@@ -84,23 +65,21 @@ export default function Register2({ navigation }) {
           {temAp ? 'Conte sobre você' : 'Você ainda não tem um apartamento?'}
         </Text>
         <Text style={styles.subtitle}>
-          Conte um pouco sobre você e suas preferências para encontrarmos os
-          melhores matches!
+          Conte um pouco sobre você e suas preferências para encontrarmos os melhores matches!
         </Text>
 
-        <Text style={styles.label}>Sobre você</Text>
-        <TextInput
-          style={[styles.input, styles.textarea]}
-          placeholder="Fale sobre sua rotina, personalidade, interesses e o que procura em um colega de quarto."
-          placeholderTextColor={colors.muted}
+        <CampoTexto
+          label="Sobre você"
+          dica="Fale sobre sua rotina, personalidade, interesses e o que procura em um colega de quarto."
           multiline
           maxLength={300}
           value={sobre}
           onChangeText={setSobre}
+          contador={`${sobre.length}/300`}
         />
-        <Text style={styles.counter}>{sobre.length}/300</Text>
 
         <Text style={styles.label}>Horários</Text>
+        <Text style={styles.dica}>Quando você costuma estudar, trabalhar, descansar e receber visitas?</Text>
         <SelectField
           title="Sua rotina"
           placeholder="Selecione os horários"
@@ -110,7 +89,8 @@ export default function Register2({ navigation }) {
           onChange={setHorarios}
         />
 
-        <Text style={styles.label}>Preferências</Text>
+        <Text style={[styles.label, { marginTop: 14 }]}>Preferências</Text>
+        <Text style={styles.dica}>Quais são suas preferências de convivência, hábitos e estilo de vida?</Text>
         <SelectField
           title="Suas preferências"
           placeholder="Selecione as preferências"
@@ -120,35 +100,34 @@ export default function Register2({ navigation }) {
           onChange={setPreferencias}
         />
 
-        <Text style={styles.label}>Observações</Text>
-        <TextInput
-          style={[styles.input, styles.textarea]}
-          placeholder="Algo mais que você gostaria de compartilhar?"
-          placeholderTextColor={colors.muted}
+        <CampoTexto
+          style={{ marginTop: 14 }}
+          label="Observações"
+          dica="Algo mais que você gostaria de compartilhar?"
           multiline
           maxLength={200}
           value={observacoes}
           onChangeText={setObservacoes}
+          contador={`${observacoes.length}/200`}
         />
-        <Text style={styles.counter}>{observacoes.length}/200</Text>
 
-        <Text style={styles.label}>
-          {temAp
-            ? 'Quanto cada morador pagaria (aluguel + contas)'
-            : 'Faixa de preço (aluguel + contas)'}
-        </Text>
-        <SelectField
-          title="Faixa de preço"
-          placeholder="Selecione a faixa de preço"
-          options={FAIXAS_PRECO}
-          value={faixa}
-          onChange={setFaixa}
-        />
+        {/* só para quem NÃO tem apartamento */}
+        {!temAp && (
+          <>
+            <Text style={styles.label}>Faixa de preço</Text>
+            <Text style={styles.dica}>Qual o valor aproximado que você pode pagar por mês (aluguel + contas)?</Text>
+            <SelectField
+              title="Faixa de preço"
+              placeholder="Selecione a faixa de preço"
+              options={FAIXAS_PRECO}
+              value={faixa}
+              onChange={setFaixa}
+            />
+          </>
+        )}
 
         <TouchableOpacity style={styles.btn} onPress={concluir}>
-          <Text style={styles.btnText}>
-            {temAp ? 'Continuar →' : 'Concluir'}
-          </Text>
+          <Text style={styles.btnText}>{temAp ? 'Continuar →' : 'Concluir'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -159,28 +138,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   back: { color: colors.primary, fontSize: 16, marginBottom: 8 },
   title: { fontSize: 26, fontWeight: 'bold', color: colors.primary },
-  subtitle: { color: colors.text, marginTop: 6, marginBottom: 8 },
-  label: {
-    fontWeight: '700',
-    color: colors.primary,
-    marginTop: 16,
-    marginBottom: 6,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    padding: 14,
-    backgroundColor: '#fff',
-    color: colors.text,
-  },
-  textarea: { minHeight: 90, textAlignVertical: 'top' },
-  counter: {
-    alignSelf: 'flex-end',
-    color: colors.muted,
-    fontSize: 12,
-    marginTop: 4,
-  },
+  subtitle: { color: colors.text, marginTop: 6, marginBottom: 16 },
+  label: { fontWeight: '700', color: colors.primary, fontSize: 14, marginBottom: 4 },
+  dica: { color: colors.muted, fontSize: 12, marginBottom: 6 },
   btn: {
     backgroundColor: colors.primary,
     padding: 16,

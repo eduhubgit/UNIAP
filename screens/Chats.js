@@ -11,14 +11,17 @@ import {
 import { colors } from '../theme';
 import { useApp } from '../context/AppContext';
 import PersonModal from '../components/PersonModal';
-import { buscarPessoa } from '../utils/people';
 import LogoUniAp from '../components/LogoUniAp';
+import { buscarPessoa } from '../utils/people';
 
 export default function Chats({ navigation }) {
   const { currentUser, chats } = useApp();
   const [info, setInfo] = useState(null);
+  const donoDeAp = !!currentUser?.ap;
 
-  // conversas mais recentes primeiro
+  // conversa "fixada": morador marcado por quem tem apê, ou apê que aceitou quem procura
+  const fixada = (chat) => (donoDeAp ? !!chat.vagaOcupada : !!chat.aceitoNaVaga);
+
   const lista = useMemo(
     () =>
       chats
@@ -28,44 +31,50 @@ export default function Chats({ navigation }) {
           ultima: chat.mensagens[chat.mensagens.length - 1],
         }))
         .filter((x) => x.pessoa)
-        .sort((a, b) => b.ultima.ts - a.ultima.ts),
-    [chats]
+        .sort((a, b) => {
+          const fixos = Number(fixada(b.chat)) - Number(fixada(a.chat));
+          return fixos !== 0 ? fixos : b.ultima.ts - a.ultima.ts;
+        }),
+    [chats, donoDeAp]
   );
+
+  const previa = (ultima) =>
+    ultima.tipo === 'ocupantes'
+      ? `${ultima.de === 'eu' ? 'Você: ' : ''}👥 Moradores do apê`
+      : `${ultima.de === 'eu' ? 'Você: ' : ''}${ultima.texto}`;
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topo}>
-        <TouchableOpacity
-          style={styles.voltar}
-          onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.voltar} onPress={() => navigation.goBack()}>
           <Text style={styles.voltarText}>←</Text>
         </TouchableOpacity>
-                <LogoUniAp tamanho={32} />
+        <LogoUniAp tamanho={32} />
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         <Text style={styles.titulo}>Conversas</Text>
-        <Text style={styles.subtitulo}>
-          Seus matches e novas mensagens em um só lugar.
-        </Text>
+        <Text style={styles.subtitulo}>Seus matches e novas mensagens em um só lugar.</Text>
 
         {lista.length === 0 ? (
           <View style={styles.vazio}>
             <Text style={styles.vazioEmoji}>💬</Text>
             <Text style={styles.vazioText}>
-              Você ainda não tem conversas. Marque interesse em alguém ou aceite
-              quem se interessou por você!
+              Você ainda não tem conversas. Marque interesse em alguém ou aceite quem se interessou por você!
             </Text>
           </View>
         ) : (
           lista.map(({ chat, pessoa, ultima }) => (
             <TouchableOpacity
               key={chat.personId}
-              style={[styles.linha, chat.naoLidas > 0 && styles.linhaNova]}
-              onPress={() =>
-                navigation.navigate('Chat', { personId: pessoa.id })
-              }>
+              style={[
+                styles.linha,
+                chat.naoLidas > 0 && styles.linhaNova,
+                fixada(chat) && styles.linhaFixada,
+              ]}
+              onPress={() => navigation.navigate('Chat', { personId: pessoa.id })}
+            >
               <TouchableOpacity onPress={() => setInfo(pessoa)}>
                 <Image source={{ uri: pessoa.foto }} style={styles.foto} />
                 {pessoa.online && <View style={styles.pontoOnline} />}
@@ -74,18 +83,21 @@ export default function Chats({ navigation }) {
               <View style={styles.textos}>
                 <Text style={styles.nome} numberOfLines={1}>
                   {pessoa.nome}
+                  {chat.produto ? ' 🛒' : ''}
                 </Text>
+                {fixada(chat) && (
+                  <Text style={styles.etiqueta}>
+                    {donoDeAp ? '📌 Mora no seu apê' : '✅ Você foi aceito(a) aqui'}
+                  </Text>
+                )}
                 <Text
                   style={[
                     styles.previa,
-                    chat.naoLidas > 0 && {
-                      color: colors.text,
-                      fontWeight: '600',
-                    },
+                    chat.naoLidas > 0 && { color: colors.text, fontWeight: '600' },
                   ]}
-                  numberOfLines={2}>
-                  {ultima.de === 'eu' ? 'Você: ' : ''}
-                  {ultima.texto}
+                  numberOfLines={2}
+                >
+                  {previa(ultima)}
                 </Text>
               </View>
 
@@ -96,9 +108,7 @@ export default function Chats({ navigation }) {
                     <Text style={styles.badgeText}>{chat.naoLidas}</Text>
                   </View>
                 ) : (
-                  <TouchableOpacity
-                    style={styles.btnInfo}
-                    onPress={() => setInfo(pessoa)}>
+                  <TouchableOpacity style={styles.btnInfo} onPress={() => setInfo(pessoa)}>
                     <Text style={styles.btnInfoText}>i</Text>
                   </TouchableOpacity>
                 )}
@@ -108,11 +118,7 @@ export default function Chats({ navigation }) {
         )}
       </ScrollView>
 
-      <PersonModal
-        person={info}
-        eu={currentUser}
-        onClose={() => setInfo(null)}
-      />
+      <PersonModal person={info} eu={currentUser} onClose={() => setInfo(null)} />
     </SafeAreaView>
   );
 }
@@ -135,7 +141,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   voltarText: { fontSize: 22, color: colors.primary },
-  logo: { fontSize: 26, fontWeight: 'bold', color: colors.primary },
   titulo: { fontSize: 30, fontWeight: 'bold', color: colors.primary },
   subtitulo: { color: colors.muted, marginBottom: 14 },
   linha: {
@@ -147,6 +152,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   linhaNova: { backgroundColor: '#F3E6FB' },
+  linhaFixada: { borderWidth: 1.5, borderColor: colors.pink },
   foto: { width: 58, height: 58, borderRadius: 29 },
   pontoOnline: {
     position: 'absolute',
@@ -161,6 +167,7 @@ const styles = StyleSheet.create({
   },
   textos: { flex: 1, marginHorizontal: 12 },
   nome: { fontSize: 16, fontWeight: 'bold', color: colors.primary },
+  etiqueta: { fontSize: 11, color: colors.pink, fontWeight: '700', marginTop: 1 },
   previa: { color: colors.muted, fontSize: 13, marginTop: 2 },
   lado: { alignItems: 'flex-end', minWidth: 44 },
   hora: { color: colors.muted, fontSize: 12 },
@@ -188,10 +195,5 @@ const styles = StyleSheet.create({
   btnInfoText: { color: colors.primary, fontWeight: 'bold', fontSize: 13 },
   vazio: { alignItems: 'center', padding: 30 },
   vazioEmoji: { fontSize: 44 },
-  vazioText: {
-    color: colors.text,
-    textAlign: 'center',
-    marginTop: 10,
-    lineHeight: 21,
-  },
+  vazioText: { color: colors.text, textAlign: 'center', marginTop: 10, lineHeight: 21 },
 });

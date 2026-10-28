@@ -5,6 +5,7 @@ import { colors } from '../theme';
 import { useApp } from '../context/AppContext';
 import TermsModal from './TermsModal';
 import LogoUniAp from './LogoUniAp';
+import { ALTURA_HEADER } from '../utils/layout';
 
 export default function Header() {
   const navigation = useNavigation();
@@ -81,7 +82,7 @@ export default function Header() {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 12 },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, height: ALTURA_HEADER, },
   icon: { fontSize: 32, color: colors.primary },
   bolinha: {
     position: 'absolute', top: -4, right: -8, minWidth: 18, height: 18, borderRadius: 9,

@@ -105,6 +105,7 @@ export default function Support({ navigation }) {
               </TouchableOpacity>
             ))}
           </View>
+          <Text style={{ fontWeight: '700', color: colors.primary, marginBottom: 6 }}>Sua mensagem</Text>
           <TextInput
             style={styles.input}
             placeholder="Descreva sua dúvida ou problema..."
