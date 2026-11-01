@@ -43,13 +43,13 @@ export default function Settings({ navigation }) {
 
   const apagarTudo = () =>
     confirmar(
-      'Apagar todos os dados',
-      'Isso apaga TODAS as contas, interesses e conversas salvos neste aparelho. Use apenas para testes.',
+      'Limpar dados locais',
+      'Isso apaga o rascunho e o cache salvos neste aparelho e sai da conta. Seus dados no banco continuam salvos.',
       () => {
         irParaInicio();
         limparTudo();
       },
-      'Apagar tudo'
+      'Limpar'
     );
 
   const linhaSwitch = (label, descricao, chave) => (
@@ -89,8 +89,7 @@ export default function Settings({ navigation }) {
             'perfilVisivel'
           )}
           <Text style={styles.nota}>
-            Estas opções ficam salvas no aparelho e passarão a ter efeito
-            completo quando conectarmos um servidor.
+            Estas opções ficam salvas na sua conta e valem em qualquer aparelho.
           </Text>
         </View>
 
@@ -114,7 +113,7 @@ export default function Settings({ navigation }) {
             style={[styles.botao, styles.botaoPerigo]}
             onPress={apagarTudo}>
             <Text style={[styles.botaoText, { color: colors.error }]}>
-              🧪 Apagar todos os dados do app
+              🧹 Limpar dados locais do app
             </Text>
           </TouchableOpacity>
         </View>

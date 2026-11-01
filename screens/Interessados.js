@@ -71,16 +71,16 @@ export default function Interessados({ navigation }) {
     };
   };
 
-  const executarConfirmacao = () => {
+  const executarConfirmacao = async () => {
     const { tipo, pessoa } = confirmacao;
     setConfirmacao(null);
     if (tipo === 'aceitar') {
-      acceptIncoming(pessoa);
+      await acceptIncoming(pessoa);
       setTimeout(() => navigation.navigate('Chats'), 300);
     } else if (tipo === 'recusar') {
-      rejectIncoming(pessoa.id);
+      await rejectIncoming(pessoa.id);
     } else {
-      removeInterest(pessoa.id);
+      await removeInterest(pessoa.id);
     }
   };
 
@@ -105,11 +105,11 @@ export default function Interessados({ navigation }) {
             ? p.msgInteresse || 'Vamos conversar?'
             : 'Aguardando resposta ⏳'}
         </Text>
-        {aba === 'enviados' && (
+        {aba === 'enviados' && (p.isMock || /^m\d+$/.test(p.id)) && (
           <TouchableOpacity
-            onPress={() => {
-              simulateAccept(p);
-              setTimeout(() => navigation.navigate('Chats'), 200);
+            onPress={async () => {
+              await simulateAccept(p);
+              navigation.navigate('Chats');
             }}>
             <Text style={styles.teste}>🧪 Simular aceite (teste)</Text>
           </TouchableOpacity>

@@ -28,7 +28,6 @@ export default function Chat({ route, navigation }) {
     sendMessage,
     markRead,
     alternarVagaOcupada,
-    alternarAceitoNaVaga,
   } = useApp();
   const insets = useSafeAreaInsets();
   const [texto, setTexto] = useState('');
@@ -59,8 +58,8 @@ export default function Chat({ route, navigation }) {
 
   const livres = vagasInfo(currentUser?.ap).livres;
 
-  const alternarVaga = () => {
-    const r = alternarVagaOcupada(personId);
+  const alternarVaga = async () => {
+    const r = await alternarVagaOcupada(personId);
     if (!r.ok && r.motivo === 'sem-vagas') {
       mostrarAlerta(
         'Sem vagas disponíveis',
@@ -208,18 +207,6 @@ export default function Chat({ route, navigation }) {
             </TouchableOpacity>
           )}
         </View>
-
-        {/* TESTE: simular o aceite do dono do apê */}
-        {modo === 'procurando' && (
-          <TouchableOpacity style={styles.teste} onPress={() => alternarAceitoNaVaga(personId)}>
-            <Text style={styles.testeText}>
-              🧪 Teste:{' '}
-              {chat.aceitoNaVaga
-                ? 'desfazer o aceite'
-                : 'simular que o dono do apê me marcou como "Vaga ocupada"'}
-            </Text>
-          </TouchableOpacity>
-        )}
 
         {/* MENSAGENS */}
         <FlatList

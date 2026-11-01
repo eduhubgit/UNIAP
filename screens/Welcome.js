@@ -17,19 +17,23 @@ export default function Welcome({ navigation }) {
   const [loginVisible, setLoginVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [entrando, setEntrando] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !senha) {
       mostrarAlerta("Atenção", "Preencha e-mail e senha.");
       return;
     }
-    if (login(email, senha)) {
+
+    setEntrando(true);
+    const ok = await login(email, senha);
+    setEntrando(false);
+
+    if (ok) {
       setLoginVisible(false);
       setEmail("");
       setSenha("");
       navigation.replace("Main");
-    } else {
-      mostrarAlerta("Erro", "E-mail ou senha incorretos.");
     }
   };
 
@@ -82,8 +86,8 @@ export default function Welcome({ navigation }) {
               value={senha}
               onChangeText={setSenha}
             />
-            <TouchableOpacity style={styles.btnPrimary} onPress={handleLogin}>
-              <Text style={styles.btnPrimaryText}>Entrar</Text>
+            <TouchableOpacity style={styles.btnPrimary} onPress={handleLogin} disabled={entrando}>
+              <Text style={styles.btnPrimaryText}>{entrando ? "Entrando..." : "Entrar"}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setLoginVisible(false)}>
               <Text style={styles.cancel}>Cancelar</Text>

@@ -102,7 +102,7 @@ export default function Profile({ navigation, route }) {
       email: u.email,
       cpf: u.cpf,
       cidade: u.cidade,
-      senha: u.senha,
+      senha: '',
       sobre: u.sobre || '',
       observacoes: u.observacoes || '',
       horarios: u.horarios || [],
@@ -112,16 +112,16 @@ export default function Profile({ navigation, route }) {
     setEditando(true);
   };
 
-  const validar = () => {
+  const validar = async () => {
     const f = form;
-    if (!f.nome.trim() || !f.matricula.trim() || !f.telefone || !f.email || !f.cpf || !f.cidade.trim() || !f.senha) {
+    if (!f.nome.trim() || !f.matricula.trim() || !f.telefone || !f.email || !f.cpf || !f.cidade.trim()) {
       return 'Preencha todos os dados pessoais.';
     }
     if (!/^\S+@\S+\.\S+$/.test(f.email)) return 'E-mail inválido.';
     if (onlyDigits(f.cpf).length !== 11) return 'CPF deve ter 11 dígitos.';
     if (onlyDigits(f.telefone).length < 10) return 'Telefone inválido.';
-    if (f.senha.length < 6) return 'A senha deve ter pelo menos 6 caracteres.';
-    if (emailExists(f.email, u.id)) return 'Já existe uma conta com esse e-mail.';
+    if (f.senha && f.senha.length < 6) return 'A nova senha deve ter pelo menos 6 caracteres.';
+    if (await emailExists(f.email, u.id)) return 'Já existe uma conta com esse e-mail.';
     if (f.sobre.trim().length < 10) return 'Conte um pouco mais sobre você (mínimo 10 caracteres).';
     if (f.horarios.length === 0) return 'Selecione pelo menos um horário.';
     if (f.preferencias.length === 0) return 'Selecione pelo menos uma preferência.';
@@ -129,8 +129,8 @@ export default function Profile({ navigation, route }) {
     return null;
   };
 
-  const salvar = () => {
-    const erro = validar();
+  const salvar = async () => {
+    const erro = await validar();
     if (erro) {
       mostrarAlerta('Atenção', erro);
       return;
@@ -142,15 +142,15 @@ export default function Profile({ navigation, route }) {
       email: form.email.trim(),
       cpf: form.cpf,
       cidade: form.cidade.trim(),
-      senha: form.senha,
       sobre: form.sobre.trim(),
       observacoes: form.observacoes.trim(),
       horarios: form.horarios,
       preferencias: form.preferencias,
     };
+    if (form.senha) dados.senha = form.senha;
     // quem tem AP tem a faixa calculada pelo aluguel, então só quem não tem edita aqui
     if (!ap) dados.faixa = form.faixa;
-    updateProfile(dados);
+    await updateProfile(dados);
     setEditando(false);
     mostrarAlerta('Pronto!', 'Seu perfil foi atualizado.');
   };
@@ -202,7 +202,7 @@ export default function Profile({ navigation, route }) {
     setEditandoAp(true);
   };
 
-  const salvarAp = () => {
+  const salvarAp = async () => {
     const f = apForm;
     const valor = parseInt(f.aluguelDigits || '0', 10) / 100;
     const vagasTotal = parseInt(f.vagasTexto || '0', 10);
@@ -229,7 +229,7 @@ export default function Profile({ navigation, route }) {
       return;
     }
 
-    updateProfile({
+    await updateProfile({
       ap: {
         ...ap,
         endereco: f.endereco.trim(),
@@ -377,7 +377,8 @@ export default function Profile({ navigation, route }) {
             {campo('CPF', 'cpf', { mask: maskCpf, props: { keyboardType: 'numeric' } })}
             {campo('Cidade', 'cidade')}
             <CampoTexto
-              label="Senha"
+              label="Nova senha (opcional)"
+              dica="Deixe em branco para manter a senha atual. Mínimo de 6 caracteres."
               senha
               value={form.senha}
               onChangeText={(t) => setCampo('senha', t)}

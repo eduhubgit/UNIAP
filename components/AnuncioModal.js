@@ -67,18 +67,19 @@ export default function AnuncioModal({ anuncio, onClose, navigation }) {
   const mudarFoto = (passo) =>
     setFotoAtiva((i) => Math.min(Math.max(i + passo, 0), fotos.length - 1));
 
-  const conversar = () => {
+  const conversar = async () => {
     if (!vendedor.mock) {
       setEtapa('indisponivel');
       return;
     }
     const pessoa = buscarPessoa(vendedor.id);
     if (pessoa) {
-      startChat(
+      const chatId = await startChat(
         pessoa,
         `Oi! Vi que você se interessou pelo meu anúncio "${anuncio.titulo}". Posso te ajudar com alguma dúvida? 😊`,
         { anuncio: { id: anuncio.id, titulo: anuncio.titulo } }
       );
+      if (!chatId) return;
     }
     setEtapa('chat');
   };

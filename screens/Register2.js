@@ -17,7 +17,7 @@ export default function Register2({ navigation }) {
   const [observacoes, setObservacoes] = useState('');
   const [faixa, setFaixa] = useState(null);
 
-  const concluir = () => {
+  const concluir = async () => {
     if (sobre.trim().length < 10) {
       mostrarAlerta('Atenção', 'Conte um pouco mais sobre você (mínimo 10 caracteres).');
       return;
@@ -48,9 +48,23 @@ export default function Register2({ navigation }) {
       navigation.navigate('ApStep1');
     } else {
       // quem não tem AP informa quanto pode pagar e finaliza aqui
-      finishRegister({ ...perfil, faixa, ap: null });
-      mostrarAlerta('Cadastro concluído!', 'Sua conta foi criada. Bem-vindo(a) ao UNI AP!');
-      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+      try {
+        const resultado = await finishRegister({ ...perfil, faixa, ap: null });
+
+        if (resultado?.pendente) {
+          mostrarAlerta(
+            'Confirme seu e-mail',
+            'Enviamos um link de confirmação. Depois de confirmar, volte e entre com seu e-mail e senha.'
+          );
+          navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
+          return;
+        }
+
+        mostrarAlerta('Cadastro concluído!', 'Sua conta foi criada. Bem-vindo(a) ao UNI AP!');
+        navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+      } catch (e) {
+        mostrarAlerta('Erro no cadastro', e.message || 'Não foi possível criar sua conta.');
+      }
     }
   };
 

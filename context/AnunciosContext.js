@@ -1,101 +1,137 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
+import { carregarAnuncios, carregarFavoritos } from '../services/dados';
+import { mensagemDeErro, publicarArquivos } from '../services/storage';
+import { CATEGORIAS } from '../data/categorias';
+import { mostrarAlerta } from '../utils/alerta';
 import { useApp } from './AppContext';
-import { ANUNCIOS_MOCK } from '../data/mockAds';
 
 const AnunciosContext = createContext();
-const CHAVE = 'uniap:anuncios:v1';
+
+const emojiDaCategoria = (id) => CATEGORIAS.find((c) => c.id === id)?.emoji || '📦';
 
 export function AnunciosProvider({ children }) {
-  const { currentUser, users, carregado: appCarregado } = useApp();
-  const [carregado, setCarregado] = useState(false);
-  const [criados, setCriados] = useState([]); // anúncios postados por usuários
-  const [favoritosPorUsuario, setFavoritosPorUsuario] = useState({}); // { idDoUsuario: [idsDeAnuncios] }
+  const { currentUser } = useApp();
+  const [anuncios, setAnuncios] = useState([]);
+  const [favoritosPorUsuario, setFavoritosPorUsuario] = useState({});
 
-  // carregar ao abrir
+  const uid = currentUser?.id;
+
+  const carregar = useCallback(async () => {
+    if (!uid) {
+      setAnuncios([]);
+      setFavoritosPorUsuario({});
+      return;
+    }
+
+    const [lista, favoritos] = await Promise.all([carregarAnuncios(), carregarFavoritos(uid)]);
+    setAnuncios(lista);
+    setFavoritosPorUsuario({ [uid]: favoritos });
+  }, [uid]);
+
+  // carrega ao entrar / trocar de conta
   useEffect(() => {
-    (async () => {
-      try {
-        const bruto = await AsyncStorage.getItem(CHAVE);
-        if (bruto) {
-          const salvo = JSON.parse(bruto);
-          setCriados(Array.isArray(salvo.criados) ? salvo.criados : []);
-          setFavoritosPorUsuario(salvo.favoritosPorUsuario || {});
-        }
-      } catch (e) {
-        console.warn('Erro ao carregar anúncios:', e);
-      }
-      setCarregado(true);
-    })();
-  }, []);
+    carregar().catch((e) => console.warn('Erro ao carregar anúncios:', e));
+  }, [carregar]);
 
-  // limpeza: some o que pertence a contas que não existem mais (apagar tudo / excluir conta)
+  // tempo real: novos anúncios e favoritos
   useEffect(() => {
-    if (!carregado || !appCarregado) return;
-    const ids = new Set(users.map((u) => u.id));
+    if (!uid) return undefined;
 
-    setCriados((prev) => {
-      const restantes = prev.filter((a) => ids.has(a.vendedor.id));
-      return restantes.length === prev.length ? prev : restantes;
-    });
+    let timer = null;
+    const agendar = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        carregar().catch((e) => console.warn('Erro ao atualizar anúncios:', e));
+      }, 250);
+    };
 
-    setFavoritosPorUsuario((prev) => {
-      const chaves = Object.keys(prev);
-      const vivas = chaves.filter((id) => ids.has(id));
-      if (vivas.length === chaves.length) return prev;
-      const novo = {};
-      vivas.forEach((id) => {
-        novo[id] = prev[id];
-      });
-      return novo;
-    });
-  }, [users, carregado, appCarregado]);
+    const canal = supabase
+      .channel(`uniap-anuncios-${uid}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ads' }, agendar)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'favorites', filter: `user_id=eq.${uid}` },
+        agendar
+      )
+      .subscribe();
 
-  // salvar a cada mudança
-  useEffect(() => {
-    if (!carregado) return;
-    AsyncStorage.setItem(CHAVE, JSON.stringify({ criados, favoritosPorUsuario })).catch((e) =>
-      console.warn('Erro ao salvar anúncios:', e)
-    );
-  }, [carregado, criados, favoritosPorUsuario]);
+    return () => {
+      if (timer) clearTimeout(timer);
+      supabase.removeChannel(canal);
+    };
+  }, [uid, carregar]);
 
-  // mais novos primeiro
-  const anuncios = [...criados, ...ANUNCIOS_MOCK].sort((a, b) => b.criadoEm - a.criadoEm);
-
-  const favoritosIds = (currentUser && favoritosPorUsuario[currentUser.id]) || [];
+  const favoritosIds = (uid && favoritosPorUsuario[uid]) || [];
   const ehFavorito = (id) => favoritosIds.includes(id);
 
-  const alternarFavorito = (id) => {
-    if (!currentUser) return;
+  const alternarFavorito = async (id) => {
+    if (!uid) return;
+
+    const eraFavorito = favoritosIds.includes(id);
+
     setFavoritosPorUsuario((prev) => {
-      const atuais = prev[currentUser.id] || [];
+      const atuais = prev[uid] || [];
       return {
         ...prev,
-        [currentUser.id]: atuais.includes(id) ? atuais.filter((x) => x !== id) : [...atuais, id],
+        [uid]: eraFavorito ? atuais.filter((x) => x !== id) : [...atuais, id],
       };
     });
+
+    const resposta = eraFavorito
+      ? await supabase.from('favorites').delete().eq('user_id', uid).eq('ad_id', id)
+      : await supabase.from('favorites').insert({ user_id: uid, ad_id: id });
+
+    if (resposta.error) {
+      mostrarAlerta('Erro', mensagemDeErro(resposta.error));
+      carregar().catch(() => {});
+    }
   };
 
-  const criarAnuncio = (dados) => {
-    const novo = {
-      id: `u-${Date.now()}`,
-      criadoEm: Date.now(),
-      cidade: currentUser.cidade || 'Quixadá - CE',
-      vendedor: {
-        id: currentUser.id,
-        nome: currentUser.nome,
-        foto: currentUser.foto || null,
-        subtitulo: 'Estudante',
-        mock: false,
-      },
-      ...dados,
-    };
-    setCriados((prev) => [novo, ...prev]);
-    return novo;
+  const criarAnuncio = async (dados) => {
+    if (!uid || !currentUser) return null;
+
+    try {
+      const fotos = await publicarArquivos(dados.fotos || [], 'anuncios');
+
+      const { data, error } = await supabase
+        .from('ads')
+        .insert({
+          vendedor: uid,
+          titulo: dados.titulo,
+          categoria: dados.categoria,
+          condicao: dados.condicao,
+          preco: dados.preco,
+          emoji: dados.emoji || emojiDaCategoria(dados.categoria),
+          descricao: dados.descricao,
+          detalhes: dados.detalhes || '',
+          fotos,
+          cidade: currentUser.cidade || 'Quixadá - CE',
+        })
+        .select('id')
+        .maybeSingle();
+
+      if (error) throw error;
+      await carregar();
+      return data;
+    } catch (e) {
+      mostrarAlerta('Erro', mensagemDeErro(e));
+      return null;
+    }
   };
 
-  const excluirAnuncio = (id) =>
-    setCriados((prev) => prev.filter((a) => !(a.id === id && a.vendedor.id === currentUser?.id)));
+  const excluirAnuncio = async (id) => {
+    if (!uid) return;
+
+    setAnuncios((prev) => prev.filter((a) => a.id !== id));
+
+    const { error } = await supabase.from('ads').delete().eq('id', id).eq('vendedor', uid);
+
+    if (error) {
+      mostrarAlerta('Erro', mensagemDeErro(error));
+      carregar().catch(() => {});
+    }
+  };
 
   return (
     <AnunciosContext.Provider

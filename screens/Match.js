@@ -45,8 +45,15 @@ export default function Match({ navigation }) {
   const proxima = () => setIndice((i) => Math.min(i + 1, fila.length));
   const anterior = () => setIndice((i) => Math.max(i - 1, 0));
 
-  const interessar = (p) => {
-    const resultado = addInterest(p);
+  const interessar = async (p) => {
+    const resultado = await addInterest(p);
+    if (resultado === "erro") {
+      return {
+        titulo: "Não foi possível enviar",
+        texto: "Verifique sua conexão e tente novamente.",
+        botao: "Ok",
+      };
+    }
     if (resultado === "match") {
       return {
         titulo: "Essa pessoa já está interessada em você! 🎉",

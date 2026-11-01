@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, ActivityIndicator, Platform, StatusBar } from 'react-native';
+import { View, Text, ActivityIndicator, Platform, StatusBar } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AppProvider, useApp } from './context/AppContext';
 import { AnunciosProvider } from './context/AnunciosContext';
+import { supabaseConfigurado } from './lib/supabase';
 import { colors } from './theme';
 import Welcome from './screens/Welcome';
 import Register from './screens/Register';
@@ -74,6 +75,10 @@ function Rotas() {
 }
 
 export default function App() {
+  if (!supabaseConfigurado) {
+    return <TelaConfiguracao />;
+  }
+
   return (
     <SafeAreaProvider>
       <AppProvider>
@@ -82,5 +87,34 @@ export default function App() {
         </AnunciosProvider>
       </AppProvider>
     </SafeAreaProvider>
+  );
+}
+
+function TelaConfiguracao() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: colors.bg,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 28,
+      }}
+    >
+      <Text style={{ fontSize: 34, fontWeight: 'bold', color: colors.primary }}>
+        UNI <Text style={{ color: colors.pink }}>AP</Text>
+      </Text>
+      <Text style={{ fontSize: 18, fontWeight: '700', marginTop: 18, color: colors.text }}>
+        Banco de dados não configurado
+      </Text>
+      <Text style={{ color: colors.muted, textAlign: 'center', marginTop: 10, lineHeight: 21 }}>
+        Crie um arquivo .env na raiz do projeto com as chaves do Supabase:
+        {'\n\n'}
+        EXPO_PUBLIC_SUPABASE_URL=...{'\n'}
+        EXPO_PUBLIC_SUPABASE_ANON_KEY=...
+        {'\n\n'}
+        Depois reinicie o Expo com: npx expo start -c
+      </Text>
+    </View>
   );
 }

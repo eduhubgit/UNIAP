@@ -45,7 +45,7 @@ export default function ApStep2({ navigation, route }) {
   const valor = parseInt(digits || "0", 10) / 100;
   const vagas = parseInt(vagasTexto || "0", 10);
 
-  const finalizar = () => {
+  const finalizar = async () => {
     if (valor <= 0) {
       mostrarAlerta("Atenção", "Informe o preço do aluguel.");
       return;
@@ -68,26 +68,43 @@ export default function ApStep2({ navigation, route }) {
       adendos: adendos.trim(),
     };
 
-    if (modo === "converter") {
-      converterParaAp(ap);
-      mostrarAlerta(
-        "Perfil atualizado!",
-        "Agora você é um perfil com apartamento e passa a ver pessoas que procuram colegas de quarto.",
-      );
-      navigation.reset({
-        index: 0,
-        routes: [
-          { name: "Main", params: { screen: "Perfil", params: { aba: "ap" } } },
-        ],
-      });
-    } else {
-      // pessoas na casa = você + vagas; a divisão define a faixa usada na compatibilidade
-      finishRegister({ ap, faixa: faixaPorValor(valor / (vagas + 1)) });
-      mostrarAlerta(
-        "Cadastro concluído!",
-        "Seu apartamento foi cadastrado e passará por verificação.",
-      );
-      navigation.reset({ index: 0, routes: [{ name: "Main" }] });
+    try {
+      if (modo === "converter") {
+        await converterParaAp(ap);
+        mostrarAlerta(
+          "Perfil atualizado!",
+          "Agora você é um perfil com apartamento e passa a ver pessoas que procuram colegas de quarto.",
+        );
+        navigation.reset({
+          index: 0,
+          routes: [
+            { name: "Main", params: { screen: "Perfil", params: { aba: "ap" } } },
+          ],
+        });
+      } else {
+        // pessoas na casa = você + vagas; a divisão define a faixa usada na compatibilidade
+        const resultado = await finishRegister({
+          ap,
+          faixa: faixaPorValor(valor / (vagas + 1)),
+        });
+
+        if (resultado?.pendente) {
+          mostrarAlerta(
+            "Confirme seu e-mail",
+            "Enviamos um link de confirmação. Depois de confirmar, volte e entre com seu e-mail e senha.",
+          );
+          navigation.reset({ index: 0, routes: [{ name: "Welcome" }] });
+          return;
+        }
+
+        mostrarAlerta(
+          "Cadastro concluído!",
+          "Seu apartamento foi cadastrado e passará por verificação.",
+        );
+        navigation.reset({ index: 0, routes: [{ name: "Main" }] });
+      }
+    } catch (e) {
+      mostrarAlerta("Erro no cadastro", e.message || "Não foi possível concluir o cadastro.");
     }
   };
 

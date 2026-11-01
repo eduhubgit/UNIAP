@@ -40,7 +40,7 @@ export default function Register({ navigation }) {
     if (uri) setFoto(uri);
   };
 
-  const validar = () => {
+  const validar = async () => {
     const { nome, matricula, telefone, email, cpf, cidade, senha } = form;
     if (
       !nome.trim() ||
@@ -57,13 +57,13 @@ export default function Register({ navigation }) {
     if (onlyDigits(cpf).length !== 11) return "CPF deve ter 11 dígitos.";
     if (onlyDigits(telefone).length < 10) return "Telefone inválido.";
     if (senha.length < 6) return "A senha deve ter pelo menos 6 caracteres.";
-    if (emailExists(email)) return "Já existe uma conta com esse e-mail.";
+    if (await emailExists(email)) return "Já existe uma conta com esse e-mail.";
     return null;
   };
 
   // 1) valida e abre o pop-up "tem AP?"
-  const handleCadastrar = () => {
-    const erro = validar();
+  const handleCadastrar = async () => {
+    const erro = await validar();
     if (erro) {
       mostrarAlerta("Atenção", erro);
       return;

@@ -1,11 +1,22 @@
 import { MOCK_USERS } from '../data/mockUsers';
 import { calcularCompatibilidade } from './compat';
 
-export const buscarPessoa = (id) => MOCK_USERS.find((p) => p.id === id);
+// Registro em memória com todos os perfis visíveis (banco + mocks locais).
+// O AppContext atualiza esta lista sempre que carrega os dados.
+let REGISTRO = [...MOCK_USERS];
+
+export const registrarPessoas = (lista = []) => {
+  const temMocksNoBanco = lista.some((p) => p.isMock);
+
+  // Se o banco já tem os perfis de demonstração, não duplica os mocks locais.
+  REGISTRO = temMocksNoBanco ? [...lista] : [...lista, ...MOCK_USERS];
+};
+
+export const buscarPessoa = (id) => REGISTRO.find((p) => p.id === id);
 
 // quem tem AP vê só quem não tem; quem não tem vê só quem tem
 export const ladoOposto = (eu) =>
-  MOCK_USERS.filter((p) => (eu?.ap ? !p.ap : !!p.ap));
+  REGISTRO.filter((p) => (eu?.ap ? !p.ap : !!p.ap));
 
 export const comScore = (p, eu) => ({
   ...p,

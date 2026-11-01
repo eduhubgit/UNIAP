@@ -55,8 +55,8 @@ export default function PersonModal({ person, eu, botao, onClose }) {
 
   const aoVoltar = () => (galeria ? setGaleria(null) : fechar());
 
-  const apertou = () => {
-    const r = botao.onPress(person);
+  const apertou = async () => {
+    const r = await botao.onPress(person);
     setResultado(r || { titulo: 'Pronto!', texto: '' });
   };
 

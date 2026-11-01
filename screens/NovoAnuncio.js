@@ -42,7 +42,7 @@ export default function NovoAnuncio({ navigation }) {
 
   const removerFoto = (indice) => setFotos((prev) => prev.filter((_, i) => i !== indice));
 
-  const publicar = () => {
+  const publicar = async () => {
     const preco = parseInt(precoDigits || '0', 10) / 100;
 
     if (titulo.trim().length < 3) {
@@ -66,7 +66,7 @@ export default function NovoAnuncio({ navigation }) {
       return;
     }
 
-    criarAnuncio({
+    const criado = await criarAnuncio({
       titulo: titulo.trim(),
       categoria,
       condicao,
@@ -74,6 +74,8 @@ export default function NovoAnuncio({ navigation }) {
       descricao: descricao.trim(),
       fotos,
     });
+
+    if (!criado) return;
 
     mostrarAlerta(
       'Anúncio publicado!',
