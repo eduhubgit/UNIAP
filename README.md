@@ -34,11 +34,6 @@ Para criar um projeto do zero, execute [`supabase/setup.sql`](./supabase/setup.s
 no SQL Editor e depois preencha o `.env` com as chaves do seu projeto.
 Detalhes em [`SUPABASE.md`](./SUPABASE.md).
 
-## Entrar com GitHub
-
-O app aceita conta GitHub (qualquer pessoa com GitHub pode entrar). A configuração
-do OAuth App e do provedor no Supabase está em [`GITHUB.md`](./GITHUB.md).
-
 ## Estrutura
 
 | Pasta | Conteúdo |
@@ -46,6 +41,6 @@ do OAuth App e do provedor no Supabase está em [`GITHUB.md`](./GITHUB.md).
 | `screens/` | Telas do app |
 | `components/` | Componentes reutilizáveis |
 | `context/` | Estado global (sessão, dados, anúncios) |
-| `services/` | Acesso ao Supabase (dados, cadastro, fotos, OAuth) |
+| `services/` | Acesso ao Supabase (dados, cadastro e fotos) |
 | `lib/supabase.js` | Cliente Supabase |
 | `supabase/` | Scripts SQL do banco |

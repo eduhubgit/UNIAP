@@ -13,7 +13,7 @@ import { mostrarAlerta } from "../utils/alerta";
 import CampoTexto from "../components/CampoTexto";
 
 export default function Welcome({ navigation }) {
-  const { login, entrarComGitHub } = useApp();
+  const { login } = useApp();
   const [loginVisible, setLoginVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -35,23 +35,6 @@ export default function Welcome({ navigation }) {
       setSenha("");
       navigation.replace("Main");
     }
-  };
-
-  const handleGitHub = async () => {
-    setEntrando(true);
-    const resultado = await entrarComGitHub();
-    setEntrando(false);
-
-    if (!resultado.ok || resultado.redirecionando) return;
-
-    setLoginVisible(false);
-
-    if (resultado.precisaPerfil) {
-      navigation.navigate("Register");
-      return;
-    }
-
-    navigation.replace("Main");
   };
 
   return (
@@ -77,15 +60,6 @@ export default function Welcome({ navigation }) {
           onPress={() => navigation.navigate("Register")}
         >
           <Text style={styles.btnOutlineText}>Criar conta</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.btnGithub}
-          onPress={handleGitHub}
-          disabled={entrando}
-        >
-          <Text style={styles.btnGithubText}>
-            {entrando ? "Conectando..." : "Entrar com GitHub"}
-          </Text>
         </TouchableOpacity>
       </View>
 
@@ -114,9 +88,6 @@ export default function Welcome({ navigation }) {
             />
             <TouchableOpacity style={styles.btnPrimary} onPress={handleLogin} disabled={entrando}>
               <Text style={styles.btnPrimaryText}>{entrando ? "Entrando..." : "Entrar"}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.btnGithub} onPress={handleGitHub} disabled={entrando}>
-              <Text style={styles.btnGithubText}>Entrar com GitHub</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setLoginVisible(false)}>
               <Text style={styles.cancel}>Cancelar</Text>
@@ -160,14 +131,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   btnOutlineText: { color: colors.primary, fontSize: 16, fontWeight: "600" },
-  btnGithub: {
-    backgroundColor: "#24292f",
-    padding: 16,
-    borderRadius: 30,
-    alignItems: "center",
-    marginTop: 12,
-  },
-  btnGithubText: { color: "#fff", fontSize: 16, fontWeight: "600" },
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",

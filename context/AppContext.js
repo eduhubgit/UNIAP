@@ -4,7 +4,6 @@ import { supabase, supabaseConfigurado } from '../lib/supabase';
 import { carregarMundo, carregarChats, apParaLinha } from '../services/dados';
 import { criarPerfilCompleto, garantirPerfil, chavePendente } from '../services/registro';
 import { mensagemDeErro, publicarArquivo, publicarArquivos } from '../services/storage';
-import { abrirLoginGitHub } from '../services/oauth';
 import { mostrarAlerta } from '../utils/alerta';
 import { faixaPorValor, vagasInfo } from '../utils/perfil';
 import { registrarPessoas } from '../utils/people';
@@ -21,8 +20,6 @@ export function AppProvider({ children }) {
   const [settings, setSettings] = useState({ notificacoes: true, perfilVisivel: true });
   const [draft, setDraft] = useState({});
   const [avisoDispensado, setAvisoDispensado] = useState(false);
-  // Conta criada pelo GitHub que ainda não tem perfil no banco.
-  const [oauthPendente, setOauthPendente] = useState(null);
 
   const uidRef = useRef(null);
   const emailRef = useRef('');
@@ -52,21 +49,6 @@ export function AppProvider({ children }) {
     setChats(listaChats);
     registrarPessoas(mundo.users);
 
-    // Login pelo GitHub sem perfil: a pessoa precisa concluir o cadastro.
-    if (mundo.currentUser) {
-      setOauthPendente(null);
-    } else if (sessaoUser.app_metadata?.provider === 'github') {
-      setOauthPendente({
-        id: sessaoUser.id,
-        email: sessaoUser.email || '',
-        nome:
-          sessaoUser.user_metadata?.full_name ||
-          sessaoUser.user_metadata?.name ||
-          sessaoUser.user_metadata?.user_name ||
-          '',
-      });
-    }
-
     return mundo.currentUser;
   }, []);
 
@@ -81,7 +63,6 @@ export function AppProvider({ children }) {
     setSettings({ notificacoes: true, perfilVisivel: true });
     setDraft({});
     setAvisoDispensado(false);
-    setOauthPendente(null);
     registrarPessoas([]);
   }, []);
 
@@ -214,28 +195,11 @@ export function AppProvider({ children }) {
     registrandoRef.current = true;
 
     try {
-      let usuario;
-      let temSessao = false;
+      const { data, error } = await supabase.auth.signUp({ email, password: senha });
+      if (error) throw new Error(mensagemDeErro(error));
 
-      if (oauthPendente) {
-        // Veio do GitHub: a conta já existe, só falta o perfil.
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser();
-        if (error) throw new Error(mensagemDeErro(error));
-        if (!user) throw new Error('Sua sessão do GitHub expirou. Entre novamente.');
-
-        usuario = user;
-        temSessao = true;
-      } else {
-        const { data, error } = await supabase.auth.signUp({ email, password: senha });
-        if (error) throw new Error(mensagemDeErro(error));
-
-        usuario = data.user;
-        if (!usuario) throw new Error('Não foi possível criar a conta.');
-        temSessao = !!data.session;
-      }
+      const usuario = data.user;
+      if (!usuario) throw new Error('Não foi possível criar a conta.');
 
       const payload = {
         nome: dados.nome,
@@ -256,7 +220,7 @@ export function AppProvider({ children }) {
       };
 
       // Confirmação de e-mail ligada: guarda o cadastro para terminar no 1º login.
-      if (!temSessao) {
+      if (!data.session) {
         await AsyncStorage.setItem(chavePendente(usuario.id), JSON.stringify(payload));
         setDraft({});
         return { pendente: true };
@@ -265,45 +229,10 @@ export function AppProvider({ children }) {
       await criarPerfilCompleto(usuario.id, payload);
       setDraft({});
       await carregarUsuario(usuario);
-      setOauthPendente(null);
 
       return { pendente: false, user: usuario };
     } finally {
       registrandoRef.current = false;
-    }
-  };
-
-  // Login pelo GitHub (web redireciona; celular abre o navegador).
-  const entrarComGitHub = async () => {
-    entrandoRef.current = true;
-
-    try {
-      const resultado = await abrirLoginGitHub();
-
-      if (resultado.status === 'cancelado') return { ok: false, motivo: 'cancelado' };
-      if (resultado.status === 'redirecionando') return { ok: true, redirecionando: true };
-      if (resultado.status !== 'ok') {
-        return { ok: false, motivo: 'erro' };
-      }
-
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
-      if (error) throw new Error(mensagemDeErro(error));
-      if (!user) throw new Error('Não foi possível obter a conta do GitHub.');
-
-      const perfil = await carregarUsuario(user);
-
-      if (!perfil) return { ok: true, precisaPerfil: true };
-
-      setAvisoDispensado(false);
-      return { ok: true };
-    } catch (e) {
-      mostrarAlerta('Erro', mensagemDeErro(e));
-      return { ok: false, motivo: 'erro' };
-    } finally {
-      entrandoRef.current = false;
     }
   };
 
@@ -633,8 +562,6 @@ export function AppProvider({ children }) {
         updateDraft,
         finishRegister,
         login,
-        entrarComGitHub,
-        oauthPendente,
         logout,
         emailExists,
         updateProfile,

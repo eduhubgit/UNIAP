@@ -46,13 +46,7 @@ Em **Authentication → Providers → Email**:
   aparelho e é concluído automaticamente no primeiro login depois da confirmação.
   O app avisa para confirmar o e-mail e voltar para a tela de login.
 
-## 3. Login com GitHub
-
-O app também aceita login pelo GitHub. A configuração fica em
-[`GITHUB.md`](./GITHUB.md): criar o OAuth App no GitHub, ativar o provedor no
-Supabase e liberar as Redirect URLs.
-
-## 4. O que foi implementado
+## 3. O que foi implementado
 
 | Arquivo | Responsabilidade |
 | --- | --- |
@@ -60,7 +54,6 @@ Supabase e liberar as Redirect URLs.
 | `services/dados.js` | Leitura do banco e conversão para o formato das telas |
 | `services/registro.js` | Criação do perfil (inclusive cadastro pendente de confirmação) |
 | `services/storage.js` | Upload de fotos base64 para os buckets + tradução de erros |
-| `services/oauth.js` | Login com GitHub: redireciona na web e abre o navegador no celular |
 | `context/AppContext.js` | Sessão, perfis, interesses, chats, mensagens e apartamento |
 | `context/AnunciosContext.js` | Anúncios e favoritos |
 | `supabase/setup.sql` | Schema, RLS, RPCs, Storage, Realtime e seed |
@@ -97,7 +90,7 @@ delete from public.ads where vendedor in (select id from public.profiles where i
 delete from public.profiles where is_mock;
 ```
 
-## 5. Checklist de teste
+## 4. Checklist de teste
 
 1. `npx expo start -c`
 2. Criar conta sem apartamento → deve cair no Match vendo perfis com AP.
@@ -107,9 +100,8 @@ delete from public.profiles where is_mock;
 6. Editar perfil e trocar a foto (deve subir para o bucket `avatars`).
 7. Publicar anúncio com foto (bucket `anuncios`) e favoritar outro anúncio.
 8. Marcar **Vaga ocupada?** no chat de quem procura AP e conferir as vagas no Perfil.
-9. Sair e entrar com **GitHub** (primeiro acesso cai no cadastro, depois entra direto).
 
-## 6. Observações
+## 5. Observações
 
 - A chave `anon` pode ficar no app: quem protege os dados é o RLS.
 - Nunca coloque a `service_role` no `.env` do app.
