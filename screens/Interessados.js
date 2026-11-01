@@ -99,7 +99,9 @@ export default function Interessados({ navigation }) {
         <Text style={styles.nome} numberOfLines={1}>
           {p.nome}
         </Text>
-        <Text style={styles.idade}>{p.idade} anos</Text>
+        <Text style={styles.idade}>
+          {p.idade ? `${p.idade} anos` : 'Idade não informada'}
+        </Text>
         <Text style={styles.msg} numberOfLines={2}>
           {aba === 'recebidos'
             ? p.msgInteresse || 'Vamos conversar?'

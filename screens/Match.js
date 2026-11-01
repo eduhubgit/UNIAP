@@ -95,7 +95,8 @@ export default function Match({ navigation }) {
               </View>
               <View style={styles.infoFoto}>
                 <Text style={styles.nome}>
-                  {pessoa.nome}, {pessoa.idade}
+                  {pessoa.nome}
+                  {pessoa.idade ? `, ${pessoa.idade}` : ''}
                 </Text>
                 <Text style={styles.sub} numberOfLines={1}>
                   📍 {pessoa.cidade} • {pessoa.curso}

@@ -23,6 +23,7 @@ export default function Register({ navigation }) {
   const [foto, setFoto] = useState(null);
   const [form, setForm] = useState({
     nome: oauthPendente?.nome || "",
+    idade: "",
     matricula: "",
     telefone: "",
     email: oauthPendente?.email || "",
@@ -42,7 +43,7 @@ export default function Register({ navigation }) {
   };
 
   const validar = async () => {
-    const { nome, matricula, telefone, email, cpf, cidade, senha } = form;
+    const { nome, idade, matricula, telefone, email, cpf, cidade, senha } = form;
     if (
       !nome.trim() ||
       !matricula.trim() ||
@@ -53,6 +54,11 @@ export default function Register({ navigation }) {
       (!viaGitHub && !senha)
     ) {
       return "Preencha todos os campos.";
+    }
+    if (!idade) return "Informe sua idade.";
+    const anos = Number(idade);
+    if (!Number.isFinite(anos) || anos < 16 || anos > 100) {
+      return "Idade inválida (entre 16 e 100 anos).";
     }
     if (!/^\S+@\S+\.\S+$/.test(email)) return "E-mail inválido.";
     if (onlyDigits(cpf).length !== 11) return "CPF deve ter 11 dígitos.";
@@ -131,6 +137,14 @@ export default function Register({ navigation }) {
           placeholder="Ex.: Maria da Silva"
           value={form.nome}
           onChangeText={(t) => setField("nome", t)}
+        />
+        <CampoTexto
+          label="Idade"
+          placeholder="Ex.: 20"
+          keyboardType="numeric"
+          maxLength={3}
+          value={form.idade}
+          onChangeText={(t) => setField("idade", onlyDigits(t))}
         />
         <CampoTexto
           label="Matrícula"

@@ -239,7 +239,7 @@ export function AppProvider({ children }) {
 
       const payload = {
         nome: dados.nome,
-        idade: null,
+        idade: dados.idade ? Number(dados.idade) : null,
         cidade: dados.cidade,
         curso: 'Estudante',
         foto: dados.foto,

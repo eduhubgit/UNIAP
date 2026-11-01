@@ -97,6 +97,7 @@ export default function Profile({ navigation, route }) {
   const iniciarEdicao = () => {
     setForm({
       nome: u.nome,
+      idade: u.idade ? String(u.idade) : '',
       matricula: u.matricula,
       telefone: u.telefone,
       email: u.email,
@@ -121,6 +122,11 @@ export default function Profile({ navigation, route }) {
     if (onlyDigits(f.cpf).length !== 11) return 'CPF deve ter 11 dígitos.';
     if (onlyDigits(f.telefone).length < 10) return 'Telefone inválido.';
     if (f.senha && f.senha.length < 6) return 'A nova senha deve ter pelo menos 6 caracteres.';
+    if (!f.idade) return 'Informe sua idade.';
+    const anos = Number(f.idade);
+    if (!Number.isFinite(anos) || anos < 16 || anos > 100) {
+      return 'Idade inválida (entre 16 e 100 anos).';
+    }
     if (await emailExists(f.email, u.id)) return 'Já existe uma conta com esse e-mail.';
     if (f.sobre.trim().length < 10) return 'Conte um pouco mais sobre você (mínimo 10 caracteres).';
     if (f.horarios.length === 0) return 'Selecione pelo menos um horário.';
@@ -137,6 +143,7 @@ export default function Profile({ navigation, route }) {
     }
     const dados = {
       nome: form.nome.trim(),
+      idade: Number(form.idade),
       matricula: form.matricula.trim(),
       telefone: form.telefone,
       email: form.email.trim(),
@@ -255,6 +262,7 @@ export default function Profile({ navigation, route }) {
 
   const linhas = [
     { icone: '👤', label: 'Nome completo', valor: u.nome },
+    { icone: '🎂', label: 'Idade', valor: u.idade ? `${u.idade} anos` : '—' },
     { icone: '🎓', label: 'Matrícula', valor: u.matricula },
     { icone: '📞', label: 'Telefone', valor: u.telefone },
     { icone: '✉️', label: 'E-mail', valor: u.email },
@@ -371,6 +379,7 @@ export default function Profile({ navigation, route }) {
             <Text style={[styles.cardTitulo, { marginBottom: 12 }]}>✏️ Editar perfil</Text>
 
             {campo('Nome completo', 'nome')}
+            {campo('Idade', 'idade', { mask: onlyDigits, props: { keyboardType: 'numeric', maxLength: 3 } })}
             {campo('Matrícula', 'matricula', { props: { keyboardType: 'numeric' } })}
             {campo('Telefone', 'telefone', { mask: maskPhone, props: { keyboardType: 'phone-pad' } })}
             {campo('E-mail', 'email', { props: { autoCapitalize: 'none', keyboardType: 'email-address' } })}
