@@ -18,13 +18,14 @@ import AskApModal from "../components/AskApModal";
 import TermsModal from "../components/TermsModal";
 
 export default function Register({ navigation }) {
-  const { updateDraft, emailExists } = useApp();
+  const { updateDraft, emailExists, oauthPendente, logout } = useApp();
+  const viaGitHub = !!oauthPendente;
   const [foto, setFoto] = useState(null);
   const [form, setForm] = useState({
-    nome: "",
+    nome: oauthPendente?.nome || "",
     matricula: "",
     telefone: "",
-    email: "",
+    email: oauthPendente?.email || "",
     cpf: "",
     cidade: "",
     senha: "",
@@ -49,15 +50,20 @@ export default function Register({ navigation }) {
       !email ||
       !cpf ||
       !cidade.trim() ||
-      !senha
+      (!viaGitHub && !senha)
     ) {
       return "Preencha todos os campos.";
     }
     if (!/^\S+@\S+\.\S+$/.test(email)) return "E-mail inválido.";
     if (onlyDigits(cpf).length !== 11) return "CPF deve ter 11 dígitos.";
     if (onlyDigits(telefone).length < 10) return "Telefone inválido.";
-    if (senha.length < 6) return "A senha deve ter pelo menos 6 caracteres.";
-    if (await emailExists(email)) return "Já existe uma conta com esse e-mail.";
+    if (!viaGitHub && senha.length < 6) {
+      return "A senha deve ter pelo menos 6 caracteres.";
+    }
+    // Conta do GitHub já tem e-mail próprio: não precisa checar duplicidade.
+    if (!viaGitHub && (await emailExists(email))) {
+      return "Já existe uma conta com esse e-mail.";
+    }
     return null;
   };
 
@@ -86,19 +92,30 @@ export default function Register({ navigation }) {
     navigation.navigate("Register2");
   };
 
+  // Quem entrou pelo GitHub pode desistir: encerra a sessão e volta.
+  const voltar = async () => {
+    if (viaGitHub) {
+      await logout();
+      navigation.navigate("Welcome");
+      return;
+    }
+    navigation.goBack();
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
         contentContainerStyle={{ padding: 24 }}
         keyboardShouldPersistTaps="handled"
       >
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={voltar}>
           <Text style={styles.back}>← Voltar</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Crie sua conta</Text>
         <Text style={styles.subtitle}>
-          Vamos começar? Preencha seus dados para se conectar com outros
-          universitários.
+          {viaGitHub
+            ? "Sua conta do GitHub está conectada. Complete seus dados para usar o UNI AP."
+            : "Vamos começar? Preencha seus dados para se conectar com outros universitários."}
         </Text>
 
         <TouchableOpacity style={styles.fotoBox} onPress={escolherFoto}>
@@ -134,6 +151,7 @@ export default function Register({ navigation }) {
           autoCapitalize="none"
           keyboardType="email-address"
           value={form.email}
+          editable={!viaGitHub}
           onChangeText={(t) => setField("email", t)}
         />
         <CampoTexto
@@ -149,24 +167,28 @@ export default function Register({ navigation }) {
           value={form.cidade}
           onChangeText={(t) => setField("cidade", t)}
         />
-        <CampoTexto
-          label="Senha"
-          dica="Mínimo de 6 caracteres."
-          senha
-          value={form.senha}
-          onChangeText={(t) => setField("senha", t)}
-        />
+        {!viaGitHub && (
+          <CampoTexto
+            label="Senha"
+            dica="Mínimo de 6 caracteres."
+            senha
+            value={form.senha}
+            onChangeText={(t) => setField("senha", t)}
+          />
+        )}
 
         <TouchableOpacity style={styles.btn} onPress={handleCadastrar}>
           <Text style={styles.btnText}>Cadastrar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={voltar}>
           <Text style={styles.jaTem}>
-            Já tem uma conta?{" "}
-            <Text style={{ color: colors.primary, fontWeight: "600" }}>
-              Entrar
-            </Text>
+            {viaGitHub ? "Cancelar cadastro" : "Já tem uma conta? "}
+            {!viaGitHub && (
+              <Text style={{ color: colors.primary, fontWeight: "600" }}>
+                Entrar
+              </Text>
+            )}
           </Text>
         </TouchableOpacity>
       </ScrollView>

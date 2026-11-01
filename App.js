@@ -39,7 +39,7 @@ function Moldura({ children }) {
 }
 
 function Rotas() {
-  const { carregado, currentUser } = useApp();
+  const { carregado, currentUser, oauthPendente } = useApp();
 
   if (!carregado) {
     return (
@@ -55,7 +55,9 @@ function Rotas() {
     <Moldura>
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName={currentUser ? 'Main' : 'Welcome'}
+          initialRouteName={
+            currentUser ? 'Main' : oauthPendente ? 'Register' : 'Welcome'
+          }
           screenOptions={{ headerShown: false }}
         >
           <Stack.Screen name="Welcome" component={Welcome} />
