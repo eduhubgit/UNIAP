@@ -125,7 +125,7 @@ export default function Chat({ route, navigation }) {
                 );
               })}
             </View>
-            <Text style={[styles.ocupDica, minha && { color: '#E6D6F3' }]}>
+            <Text style={[styles.ocupDica, minha && { color: '#c2e4ff' }]}>
               Toque para ver o perfil
             </Text>
           </View>
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   pessoa: { flex: 1, flexDirection: 'row', alignItems: 'center', marginLeft: 4 },
   foto: { width: 42, height: 42, borderRadius: 21 },
   nome: { fontSize: 16, fontWeight: 'bold', color: colors.primary },
-  status: { fontSize: 12, color: '#2A9D8F' },
+  status: { fontSize: 12, color: '#0cb7f2' },
   btnInfo: {
     width: 32,
     height: 32,
@@ -293,13 +293,13 @@ const styles = StyleSheet.create({
   circuloVerde: { backgroundColor: '#2EC4A6', borderColor: '#2EC4A6' },
   check: { color: '#fff', fontWeight: 'bold', fontSize: 18, marginTop: -2 },
 
-  teste: { backgroundColor: '#FCE4F1', paddingVertical: 6, paddingHorizontal: 12 },
+  teste: { backgroundColor: '#c2e4ff', paddingVertical: 6, paddingHorizontal: 12 },
   testeText: { color: colors.pink, fontWeight: '700', fontSize: 11, textAlign: 'center' },
 
   linhaMsg: { marginBottom: 10 },
   balao: { maxWidth: '82%', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 22 },
   balaoMeu: { backgroundColor: colors.primary, borderBottomRightRadius: 6 },
-  balaoDele: { backgroundColor: '#EFE6F7', borderBottomLeftRadius: 6 },
+  balaoDele: { backgroundColor: '#c2e4ff', borderBottomLeftRadius: 6 },
   msgTexto: { color: colors.text, fontSize: 15 },
   msgHora: { fontSize: 10, color: colors.muted, marginTop: 3, marginHorizontal: 6 },
 

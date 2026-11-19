@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  onlineText: { color: "#2A9D8F", fontWeight: "600", fontSize: 12 },
+  onlineText: { color: "#0cb7f2", fontWeight: "600", fontSize: 12 },
   compat: {
     position: "absolute",
     top: 14,
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     paddingTop: 4,
   },
   tag: {
-    backgroundColor: "#EBDDF7",
+    backgroundColor: "#c2e4ff",
     borderRadius: 16,
     paddingVertical: 6,
     paddingHorizontal: 12,

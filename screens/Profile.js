@@ -608,7 +608,7 @@ const styles = StyleSheet.create({
   interruptorLinha: { alignItems: 'flex-end', marginBottom: 12 },
   interruptor: {
     flexDirection: 'row',
-    backgroundColor: '#EBDDF7',
+    backgroundColor: '#c2e4ff',
     borderRadius: 22,
     padding: 3,
   },
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   cardSub: { color: colors.text, marginTop: 2, marginBottom: 8 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 4 },
   tag: {
-    backgroundColor: '#EBDDF7',
+    backgroundColor: '#c2e4ff',
     borderRadius: 16,
     paddingVertical: 6,
     paddingHorizontal: 12,

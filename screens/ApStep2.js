@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   switchLabel: { color: colors.text, fontSize: 15 },
   dica: {
-    backgroundColor: "#EBDDF7",
+    backgroundColor: "#c2e4ff",
     borderRadius: 14,
     padding: 14,
     marginBottom: 14,

@@ -6,11 +6,13 @@ import {
   StyleSheet,
   Modal,
   SafeAreaView,
+  Image
 } from "react-native";
 import { colors } from "../theme";
 import { useApp } from "../context/AppContext";
 import { mostrarAlerta } from "../utils/alerta";
 import CampoTexto from "../components/CampoTexto";
+
 
 export default function Welcome({ navigation }) {
   const { login } = useApp();
@@ -40,9 +42,10 @@ export default function Welcome({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.top}>
-        <Text style={styles.logo}>
-          UNI <Text style={{ color: colors.pink }}>AP</Text>
-        </Text>
+        <Image
+          source={require("../assets/UNIAP.png")}
+          style={styles.logo}
+        />
         <Text style={styles.slogan}>
           Mais do que um quarto,{"\n"}o lugar certo para você.
         </Text>
@@ -107,9 +110,13 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   top: { alignItems: "center", marginTop: 80 },
-  logo: { fontSize: 56, fontWeight: "bold", color: colors.primary },
+  logo: {
+    width: 600,
+    height: 300,
+    resizeMode: "contain",
+  },
   slogan: {
-    fontSize: 18,
+    fontSize: 30,
     color: colors.text,
     textAlign: "center",
     marginTop: 12,

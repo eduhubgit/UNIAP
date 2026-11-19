@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   titulo: { fontSize: 22, fontWeight: 'bold', color: colors.primary, marginTop: 2 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 10 },
   chip: {
-    backgroundColor: '#EFE6F7',
+    backgroundColor: '#c2e4ff',
     borderRadius: 16,
     paddingVertical: 6,
     paddingHorizontal: 12,

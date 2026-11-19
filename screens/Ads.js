@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   rodape: { flexDirection: 'row', alignItems: 'flex-end', marginTop: 8 },
   meta: { color: colors.muted, fontSize: 12, marginTop: 1 },
   preco: {
-    backgroundColor: '#F3E6FB',
+    backgroundColor: '#c2e4ff',
     borderRadius: 18,
     paddingVertical: 8,
     paddingHorizontal: 14,

@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
   texto: { color: colors.text, lineHeight: 21 },
   tags: { flexDirection: 'row', flexWrap: 'wrap' },
   tag: {
-    backgroundColor: '#EFE6F7',
+    backgroundColor: '#92e9ff',
     borderRadius: 16,
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 3,
     alignItems: 'center',
   },
-  divBoxDestaque: { backgroundColor: '#FCE4F1', borderWidth: 1.5, borderColor: colors.pink },
+  divBoxDestaque: { backgroundColor: '#c2e4ff', borderWidth: 1.5, borderColor: colors.pink },
   divTitulo: { color: colors.primary, fontWeight: '800', fontSize: 12, textAlign: 'center' },
   divSub: { color: colors.muted, fontSize: 11, textAlign: 'center', marginTop: 2 },
   divValor: { color: colors.primary, fontWeight: '900', fontSize: 20, marginTop: 6 },

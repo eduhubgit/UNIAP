@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 10,
   },
-  linhaNova: { backgroundColor: '#F3E6FB' },
+  linhaNova: { backgroundColor: '#c2e4ff' },
   linhaFixada: { borderWidth: 1.5, borderColor: colors.pink },
   foto: { width: 58, height: 58, borderRadius: 29 },
   pontoOnline: {

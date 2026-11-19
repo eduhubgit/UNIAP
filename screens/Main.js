@@ -126,7 +126,7 @@ export default function Main() {
 const styles = StyleSheet.create({
   barra: {
     flexDirection: 'row',
-    backgroundColor: '#EBDDF7',
+    backgroundColor: '#c2e4ff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingTop: 10,
