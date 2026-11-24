@@ -7,6 +7,8 @@ import {
   ScrollView,
   Image,
   SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { colors } from "../theme";
 import { useApp } from "../context/AppContext";
@@ -98,10 +100,15 @@ export default function Register({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
       <ScrollView
-        contentContainerStyle={{ padding: 24 }}
+        contentContainerStyle={{ padding: 24, paddingBottom: 120 }}
         keyboardShouldPersistTaps="handled"
       >
+        
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.back}>← Voltar</Text>
         </TouchableOpacity>
@@ -188,6 +195,7 @@ export default function Register({ navigation }) {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+      </KeyboardAvoidingView>
 
       <AskApModal
         visible={apVisible}
@@ -212,7 +220,7 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 55,
-    backgroundColor: "#80bfdf",
+    backgroundColor: "#71b3d4",
     alignSelf: "center",
     justifyContent: "center",
     alignItems: "center",
