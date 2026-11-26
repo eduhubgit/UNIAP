@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase, supabaseConfigurado } from '../lib/supabase';
 import { carregarMundo, carregarChats, apParaLinha } from '../services/dados';
@@ -24,6 +25,8 @@ export function AppProvider({ children }) {
   const uidRef = useRef(null);
   const emailRef = useRef('');
   const recarregandoRef = useRef(false);
+  const recarregandoChatsRef = useRef(false);
+  const canalAvisoRef = useRef(null);
   const registrandoRef = useRef(false);
   const entrandoRef = useRef(false);
 
@@ -89,6 +92,21 @@ export function AppProvider({ children }) {
     }
   }, []);
 
+  // Atualização leve: só as conversas e mensagens. É usada pelo tempo real e
+  // pela verificação periódica, para a mensagem "chegar" sem recarregar o app.
+  const recarregarChats = useCallback(async () => {
+    const uid = uidRef.current;
+    if (!uid || recarregandoChatsRef.current) return;
+
+    recarregandoChatsRef.current = true;
+    try {
+      const listaChats = await carregarChats(uid);
+      setChats(listaChats);
+    } finally {
+      recarregandoChatsRef.current = false;
+    }
+  }, []);
+
   // ---------- SESSÃO ----------
   useEffect(() => {
     if (!supabaseConfigurado) {
@@ -151,27 +169,80 @@ export function AppProvider({ children }) {
     const uid = currentUser?.id;
     if (!uid) return undefined;
 
-    let timer = null;
-    const agendar = () => {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => {
+    let timerChats = null;
+    let timerGeral = null;
+
+    // Mensagem/chat mudou: busca só as conversas (rápido).
+    const agendarChats = () => {
+      if (timerChats) clearTimeout(timerChats);
+      timerChats = setTimeout(() => {
+        recarregarChats().catch((e) => console.warn('Erro ao atualizar chats:', e));
+      }, 150);
+    };
+
+    // Interesses/perfis mudaram: atualiza tudo (match, vagas, online...).
+    const agendarGeral = () => {
+      if (timerGeral) clearTimeout(timerGeral);
+      timerGeral = setTimeout(() => {
         recarregar().catch((e) => console.warn('Erro ao atualizar:', e));
       }, 250);
     };
 
     const canal = supabase
       .channel(`uniap-${uid}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'chats' }, agendar)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, agendar)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'interests' }, agendar)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, agendar)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chats' }, agendarChats)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, agendarChats)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'interests' }, agendarGeral)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, agendarGeral)
+      .subscribe((status, erro) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn('Realtime indisponível, usando atualização periódica:', erro || status);
+        }
+      });
+
+    // Aviso instantâneo entre usuários. Não depende da publicação
+    // `supabase_realtime`: quando alguém envia uma mensagem, avisa o
+    // destinatário para ele buscar as conversas na hora.
+    const canalAviso = supabase
+      .channel('uniap-avisos')
+      .on('broadcast', { event: 'nova-mensagem' }, ({ payload }) => {
+        if (payload?.para === uid) agendarChats();
+      })
       .subscribe();
 
+    canalAvisoRef.current = canalAviso;
+
     return () => {
-      if (timer) clearTimeout(timer);
+      if (timerChats) clearTimeout(timerChats);
+      if (timerGeral) clearTimeout(timerGeral);
+      canalAvisoRef.current = null;
+      supabase.removeChannel(canalAviso);
       supabase.removeChannel(canal);
     };
-  }, [currentUser?.id, recarregar]);
+  }, [currentUser?.id, recarregar, recarregarChats]);
+
+  // Rede de segurança: se o Realtime não entregar o evento (por exemplo, banco
+  // sem a publicação `supabase_realtime`), as conversas se atualizam sozinhas.
+  useEffect(() => {
+    const uid = currentUser?.id;
+    if (!uid) return undefined;
+
+    const atualizar = () => {
+      if (AppState.currentState === 'active') {
+        recarregarChats().catch(() => {});
+      }
+    };
+
+    const intervalo = setInterval(atualizar, 4000);
+    const assinatura = AppState.addEventListener('change', (estado) => {
+      if (estado === 'active') atualizar();
+    });
+
+    return () => {
+      clearInterval(intervalo);
+      assinatura.remove();
+    };
+  }, [currentUser?.id, recarregarChats]);
 
   // ---------- BLOQUEIO DE MATCH E INTERESSADOS ----------
   let bloqueio = null;
@@ -517,7 +588,21 @@ export function AppProvider({ children }) {
       return;
     }
 
-    await recarregar();
+    // Avisa o outro usuário na hora (Broadcast). Se ele estiver online, a
+    // conversa atualiza imediatamente; se não, a verificação periódica cobre.
+    const aviso = canalAvisoRef.current;
+    if (aviso) {
+      aviso
+        .send({
+          type: 'broadcast',
+          event: 'nova-mensagem',
+          payload: { para: personId, chatId: chat.id },
+        })
+        .catch(() => {});
+    }
+
+    // Só as conversas mudaram: atualização leve para a mensagem aparecer já.
+    await recarregarChats();
   };
 
   const markRead = async (personId) => {
