@@ -146,7 +146,11 @@ export default function Chat({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === "android" ? insets.top + 10 : 0}
+      >
         {/* TOPO */}
         <View style={styles.topo}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.voltar}>
@@ -211,11 +215,13 @@ export default function Chat({ route, navigation }) {
         {/* MENSAGENS */}
         <FlatList
           ref={listaRef}
-          data={chat.mensagens}
-          keyExtractor={(m) => m.id}
-          renderItem={renderMensagem}
-          contentContainerStyle={{ padding: 14 }}
-          onContentSizeChange={() => listaRef.current?.scrollToEnd({ animated: true })}
+           data={chat.mensagens}
+           keyExtractor={(m) => m.id}
+           renderItem={renderMensagem}
+           contentContainerStyle={{ padding: 14 }}
+           keyboardShouldPersistTaps="handled"
+           onContentSizeChange={() => listaRef.current?.scrollToEnd({ animated: true })}
+           onLayout={() => listaRef.current?.scrollToEnd({ animated: true })}
         />
 
         {/* CAMPO DE ESCREVER */}
